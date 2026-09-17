@@ -227,6 +227,9 @@ async function handleSubmit(request, env) {
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return json({ ok: false, error: "邮箱格式不正确" }, 400);
   }
+  // 发布栏目白名单：经验分享 / 灵光一现 / 资料汇总
+  const ALLOWED_TYPES = ["经验分享", "灵光一现", "资料汇总"];
+  const rtype = ALLOWED_TYPES.includes(body.type) ? body.type : "经验分享";
 
   // 元信息块（单行字段）放在 Issue 正文最顶部，auto-publish 工作流据此生成文章 front matter；
   // 之后的内容为投稿原文，一字不改。
@@ -237,6 +240,7 @@ async function handleSubmit(request, env) {
     `title: ${line(title)}\n` +
     `author: ${line(author)}\n` +
     `email: ${line(email || "-")}\n` +
+    `type: ${line(rtype)}\n` +
     `date: ${now}\n` +
     "CSU-META-->\n\n" +
     content + "\n";

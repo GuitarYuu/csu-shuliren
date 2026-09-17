@@ -2,7 +2,10 @@
 title: "你好，LaTeX —— 示例笔记"
 author: "CSU数理人"
 date: "2026-09-17"
+type: "经验分享"
 ---
+
+<p class="csu-post-type"><span class="csu-badge tone-violet">经验分享</span><span class="csu-post-date">2026-09-17</span></p>
 
 欢迎来到 **CSU数理人**！这是一篇示例笔记，用来展示本站的排版能力，确认无误后可直接删除。
 

@@ -1,11 +1,196 @@
-/* 首页副标题 */
-.md-typeset .hero-sub {
-  font-size: 1.02em;
-  color: var(--md-default-fg-color--light);
-  margin-top: -0.8em;
+/* ============================================================
+   CSU数理人 · 全站样式
+   色调体系（模仿卡片式现代设计）：violet / amber / blue
+   ============================================================ */
+
+/* ---------- 色调变量 ---------- */
+.md-typeset {
+  --csu-violet: #7c3aed;
+  --csu-amber: #d97706;
+  --csu-blue: #2563eb;
+}
+[data-md-color-scheme="slate"] .md-typeset {
+  --csu-violet: #c4b5fd;
+  --csu-amber: #fcd34d;
+  --csu-blue: #93c5fd;
 }
 
-/* 投稿表单 */
+/* ---------- 首页 Hero ---------- */
+.md-typeset .csu-hero {
+  margin: 0 0 2.2em;
+  padding: 2.4em 1.6em 2.2em;
+  text-align: center;
+  border-radius: 1rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  background:
+    radial-gradient(900px 320px at 15% -20%, rgba(124, 58, 237, 0.16), transparent 60%),
+    radial-gradient(900px 320px at 85% -20%, rgba(37, 99, 235, 0.14), transparent 60%),
+    linear-gradient(180deg, rgba(124, 58, 237, 0.05), transparent);
+}
+.md-typeset .csu-hero-kicker {
+  margin: 0 0 0.8em;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  color: var(--csu-violet);
+}
+.md-typeset .csu-hero-title {
+  margin: 0 0 0.35em;
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  background: linear-gradient(120deg, var(--csu-violet), var(--csu-blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.md-typeset .csu-hero-sub {
+  margin: 0 auto 1.2em;
+  max-width: 34em;
+  font-size: 0.95rem;
+  color: var(--md-default-fg-color--light);
+}
+.md-typeset .csu-hero-chips {
+  margin: 0 0 1.4em;
+}
+.md-typeset .csu-chip {
+  display: inline-block;
+  margin: 0.2em 0.25em;
+  padding: 0.25em 0.85em;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  background: var(--md-default-bg-color);
+}
+.md-typeset .csu-hero-actions {
+  margin: 0;
+}
+.md-typeset .csu-btn {
+  display: inline-block;
+  margin: 0.25em 0.35em;
+  padding: 0.6em 1.5em;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  color: var(--md-default-fg-color);
+  background: var(--md-default-bg-color);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.md-typeset .csu-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  color: var(--md-default-fg-color);
+  border-color: var(--csu-violet);
+}
+.md-typeset .csu-btn-primary {
+  border: none;
+  color: #fff;
+  background: linear-gradient(120deg, var(--csu-violet), var(--csu-blue));
+}
+[data-md-color-scheme="slate"] .md-typeset .csu-btn-primary {
+  color: #1e1b4b;
+}
+.md-typeset .csu-btn-primary:hover {
+  color: #fff;
+}
+[data-md-color-scheme="slate"] .md-typeset .csu-btn-primary:hover {
+  color: #1e1b4b;
+}
+
+/* ---------- 栏目卡片 ---------- */
+.md-typeset .csu-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1em;
+  margin: 1.4em 0 2em;
+}
+.md-typeset .csu-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.3em 1.3em 1.1em;
+  border-radius: 0.9rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-top: 3px solid var(--tone, var(--csu-violet));
+  background: var(--md-default-bg-color);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.md-typeset .csu-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1);
+}
+.md-typeset .csu-card.tone-violet { --tone: var(--csu-violet); }
+.md-typeset .csu-card.tone-amber { --tone: var(--csu-amber); }
+.md-typeset .csu-card.tone-blue { --tone: var(--csu-blue); }
+.md-typeset .csu-card-cat {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--tone);
+}
+.md-typeset .csu-card-title {
+  margin: 0.5em 0 0.4em;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+.md-typeset .csu-card-desc {
+  margin: 0 0 0.9em;
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--md-default-fg-color--light);
+}
+.md-typeset .csu-card-chips {
+  margin: 0 0 1em;
+}
+.md-typeset .csu-card-chips span {
+  display: inline-block;
+  margin: 0.15em 0.2em;
+  padding: 0.12em 0.7em;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+}
+.md-typeset .csu-card-link {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--tone);
+}
+
+/* ---------- 发布步骤 ---------- */
+.md-typeset .csu-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1em;
+  margin: 1.4em 0 2em;
+}
+.md-typeset .csu-step {
+  padding: 1.1em 1.2em;
+  border-radius: 0.9rem;
+  border: 1px dashed var(--md-default-fg-color--lighter);
+}
+.md-typeset .csu-step p {
+  margin: 0.6em 0 0;
+  font-size: 0.78rem;
+  color: var(--md-default-fg-color--light);
+}
+.md-typeset .csu-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8em;
+  height: 1.8em;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #fff;
+  background: linear-gradient(120deg, var(--csu-violet), var(--csu-blue));
+}
+[data-md-color-scheme="slate"] .md-typeset .csu-step-num {
+  color: #1e1b4b;
+}
+
+/* ---------- 投稿表单 ---------- */
 .md-typeset form.csu-form {
   display: block;
   margin: 1.2em 0;
@@ -74,4 +259,86 @@
 .md-typeset .csu-result.err {
   background: rgba(244, 67, 54, 0.12);
   color: #c62828;
+}
+
+/* ---------- 栏目选择器（单选卡片） ---------- */
+.md-typeset .csu-type-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.7em;
+  margin: 0.2em 0 0.4em;
+}
+.md-typeset .csu-type-opt {
+  display: block;
+  margin: 0 !important;
+  padding: 0.7em 0.9em;
+  border-radius: 0.7rem;
+  border: 1.5px solid var(--md-default-fg-color--lighter);
+  border-top: 3px solid var(--tone);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.md-typeset .csu-type-opt:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+.md-typeset .csu-type-opt input {
+  display: none;
+}
+.md-typeset .csu-type-opt b {
+  display: block;
+  font-size: 0.82rem;
+}
+.md-typeset .csu-type-opt small {
+  display: block;
+  margin-top: 0.2em;
+  font-size: 0.68rem;
+  color: var(--md-default-fg-color--light);
+}
+.md-typeset .csu-type-opt:has(input:checked) {
+  border-color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 8%, transparent);
+  box-shadow: 0 0 0 1px var(--tone);
+}
+.md-typeset .csu-type-opt.tone-violet { --tone: var(--csu-violet); }
+.md-typeset .csu-type-opt.tone-amber { --tone: var(--csu-amber); }
+.md-typeset .csu-type-opt.tone-blue { --tone: var(--csu-blue); }
+
+/* ---------- 文章类型徽章 ---------- */
+.md-typeset .csu-post-type {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  margin: 0 0 1.2em !important;
+}
+.md-typeset .csu-badge {
+  display: inline-block;
+  padding: 0.18em 0.85em;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.md-typeset .csu-badge.tone-violet {
+  color: var(--csu-violet);
+  background: color-mix(in srgb, var(--csu-violet) 12%, transparent);
+}
+.md-typeset .csu-badge.tone-amber {
+  color: var(--csu-amber);
+  background: color-mix(in srgb, var(--csu-amber) 14%, transparent);
+}
+.md-typeset .csu-badge.tone-blue {
+  color: var(--csu-blue);
+  background: color-mix(in srgb, var(--csu-blue) 12%, transparent);
+}
+.md-typeset .csu-post-date {
+  font-size: 0.7rem;
+  color: var(--md-default-fg-color--light);
+}
+
+/* ---------- 首页副标题（兼容旧版） ---------- */
+.md-typeset .hero-sub {
+  font-size: 1.02em;
+  color: var(--md-default-fg-color--light);
+  margin-top: -0.8em;
 }

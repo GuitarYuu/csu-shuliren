@@ -17,7 +17,9 @@
     e.preventDefault();
     var btn = document.getElementById("csu-f-btn");
     var box = document.getElementById("csu-submit-result");
+    var typeInput = form.querySelector('input[name="type"]:checked');
     var payload = {
+      type: typeInput ? typeInput.value : "经验分享",
       title: val("csu-f-title"),
       author: val("csu-f-author"),
       email: val("csu-f-email"),
