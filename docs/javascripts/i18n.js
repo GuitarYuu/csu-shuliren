@@ -171,6 +171,11 @@
       walkText(root, map);
     });
 
+    // 3.5) 内容区 h1 标题（如首页的「首页」；用文本节点替换，保留 permalink 锚点）
+    document.querySelectorAll(".md-content h1").forEach(function (h1) {
+      walkText(h1, map);
+    });
+
     // 4) 页面标题
     document.title = document.title
       .split(" - ")
