@@ -1,0 +1,56 @@
+# ============================================================================
+# 站点构建部署：main 分支更新 → mkdocs build → 部署 GitHub Pages
+# 首次使用需在仓库 Settings → Pages → Source 选择「GitHub Actions」
+# ============================================================================
+name: Build Site（构建并部署 GitHub Pages）
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**", "mkdocs.yml"]
+  workflow_dispatch: {}    # 供 auto-publish 工作流显式触发，也支持手动运行
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true   # 新构建排队后取消旧部署，始终部署最新内容
+
+jobs:
+  build:
+    name: 构建 MkDocs 站点
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: 安装 MkDocs Material 及插件
+        run: pip install mkdocs-material mkdocs-awesome-pages-plugin
+
+      - name: 构建
+        run: mkdocs build
+
+      - name: 上传构建产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: 部署到 GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 部署
+        id: deployment
+        uses: actions/deploy-pages@v4

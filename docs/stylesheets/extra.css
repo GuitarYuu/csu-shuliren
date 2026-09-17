@@ -1,0 +1,77 @@
+/* 首页副标题 */
+.md-typeset .hero-sub {
+  font-size: 1.02em;
+  color: var(--md-default-fg-color--light);
+  margin-top: -0.8em;
+}
+
+/* 投稿表单 */
+.md-typeset form.csu-form {
+  display: block;
+  margin: 1.2em 0;
+  padding: 1.2em 1.4em;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.6rem;
+  background: var(--md-default-bg-color);
+}
+.md-typeset .csu-form label {
+  display: block;
+  margin: 0.9em 0 0.25em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--md-default-fg-color--light);
+}
+.md-typeset .csu-form label span {
+  color: #e53935;
+}
+.md-typeset .csu-form input,
+.md-typeset .csu-form textarea {
+  display: block;
+  width: 100%;
+  padding: 0.6em 0.8em;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--md-default-fg-color);
+  font: inherit;
+  font-size: 0.82rem;
+}
+.md-typeset .csu-form textarea {
+  resize: vertical;
+  font-family: var(--md-code-font, monospace);
+  line-height: 1.6;
+}
+.md-typeset .csu-form button {
+  margin-top: 1em;
+  padding: 0.6em 1.6em;
+  border: none;
+  border-radius: 0.4rem;
+  background: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.md-typeset .csu-form button:hover {
+  opacity: 0.92;
+}
+.md-typeset .csu-form button[disabled] {
+  opacity: 0.6;
+  cursor: wait;
+}
+.md-typeset .csu-result {
+  margin-top: 1em;
+  padding: 0.8em 1em;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.md-typeset .csu-result.ok {
+  background: rgba(76, 175, 80, 0.12);
+  color: #2e7d32;
+}
+.md-typeset .csu-result.err {
+  background: rgba(244, 67, 54, 0.12);
+  color: #c62828;
+}

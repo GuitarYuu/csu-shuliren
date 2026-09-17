@@ -1,0 +1,59 @@
+# ============================================================================
+# CSU数理人 · MkDocs Material 站点配置
+# ★ 需替换：site_url 换成你的 GitHub Pages 地址（仅影响 sitemap，不影响访问）
+# ============================================================================
+site_name: CSU数理人
+site_description: 中南大学数理人 · 数学笔记共享站（Markdown + LaTeX）
+site_url: https://guitaryuu.github.io/csu-shuliren/
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.expand
+    - search.highlight
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: 切换深色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: 切换浅色模式
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:          # LaTeX 公式 → MathJax 渲染
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+
+plugins:
+  - search
+  - awesome-pages                 # 免维护导航：docs/posts 下新增文章自动进侧边栏
+
+extra_css:
+  - stylesheets/extra.css
+extra_javascript:
+  # 顺序重要：先加载 MathJax 配置，再加载 MathJax 本体
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - javascripts/protect.js        # 弱防复制：禁右键/禁选中/拦 Ctrl+C
+  - javascripts/guard.js          # github.io 直连 → 自动跳回 Worker 正式入口
+  - javascripts/submit.js         # 首页投稿表单提交逻辑

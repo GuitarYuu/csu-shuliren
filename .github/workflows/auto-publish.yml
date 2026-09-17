@@ -1,0 +1,62 @@
+# ============================================================================
+# 投稿自动发布：Issue 被打上 publish 标签 → 生成 docs/posts 文章 → 提交 main
+# 双重保险：仅当 打标签者 == 仓库所有者 且 Issue 处于开启状态 时才触发
+# ============================================================================
+name: Auto Publish（投稿自动发布）
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write   # 推送文章文件到 main
+  issues: write     # 评论并关闭 Issue
+  actions: write    # 触发 build-site 工作流（GITHUB_TOKEN 的 push 不会自动触发其他工作流）
+
+concurrency:
+  group: auto-publish
+  cancel-in-progress: false   # 多篇审核发布时排队执行，避免 push 冲突
+
+jobs:
+  publish:
+    name: 由 publish 标签生成文章并提交
+    if: >-
+      github.event.label.name == 'publish' &&
+      github.actor == github.repository_owner &&
+      github.event.issue.state == 'open'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 由 Issue 生成文章文件
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        run: node scripts/build-post.js
+
+      - name: 提交并推送到 main
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/posts
+          git commit -m "publish: 投稿 #$ISSUE_NUMBER $ISSUE_TITLE"
+          git push
+
+      - name: 关闭 Issue 并通知作者
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "✅ 审核通过，文章已发布，站点正在自动构建，几分钟后即可访问。"
+          gh issue close "$ISSUE_NUMBER"
+
+      - name: 触发站点构建部署
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run build-site.yml --ref main

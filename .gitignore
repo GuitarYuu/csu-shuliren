@@ -1,0 +1,6 @@
+# MkDocs 本地构建产物
+site/
+
+# 系统文件
+Thumbs.db
+.DS_Store
