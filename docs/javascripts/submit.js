@@ -6,7 +6,7 @@
  *   经 Worker 访问时自动走同源（留空即可）；从 github.io 直连（公开模式）时跨域调用 Worker。
  */
 (function () {
-  var WORKER_ORIGIN = "https://csu-shuliren.<你的子域>.workers.dev"; // ★ 替换
+  var WORKER_ORIGIN = "https://csu-shuliren.2544864177.workers.dev";
 
   var form = document.getElementById("csu-submit-form");
   if (!form) return;
