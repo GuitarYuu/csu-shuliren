@@ -1,0 +1,86 @@
+# ============================================================================
+# 新投稿即时通知：有人投稿（Issue 创建）时，按已配置的渠道推送给站长
+# 渠道开关：在仓库 Settings → Secrets and variables → Actions 里配置对应
+#   Secret 即自动启用，未配置的渠道自动跳过：
+#   - QQ 邮箱邮件：MAIL_TO / MAIL_USER / MAIL_PASS（MAIL_USER=QQ邮箱，MAIL_PASS=授权码）
+#   - Server酱微信推送：SERVERCHAN_KEY（sct.ftqq.com 领取）
+#   - Telegram：TG_BOT_TOKEN / TG_CHAT_ID
+# ============================================================================
+name: Notify（新投稿即时通知）
+
+on:
+  issues:
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  notify:
+    name: 推送新投稿通知
+    runs-on: ubuntu-latest
+    env:
+      ISSUE_TITLE: ${{ github.event.issue.title }}
+      ISSUE_URL: ${{ github.event.issue.html_url }}
+      ISSUE_BODY: ${{ github.event.issue.body }}
+      ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+      MAIL_TO: ${{ secrets.MAIL_TO || '' }}
+      MAIL_USER: ${{ secrets.MAIL_USER || '' }}
+      MAIL_PASS: ${{ secrets.MAIL_PASS || '' }}
+      SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY || '' }}
+      TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN || '' }}
+      TG_CHAT_ID: ${{ secrets.TG_CHAT_ID || '' }}
+    steps:
+      - name: 汇总通知内容
+        id: msg
+        run: |
+          EXCERPT=$(printf '%s' "$ISSUE_BODY" | head -c 600)
+          echo "excerpt=$EXCERPT" >> "$GITHUB_OUTPUT"
+
+      # ---------- 渠道 1：QQ 邮箱邮件 ----------
+      - name: 邮件通知
+        if: env.MAIL_TO != '' && env.MAIL_USER != '' && env.MAIL_PASS != ''
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USER }}
+          password: ${{ secrets.MAIL_PASS }}
+          subject: "📩 新投稿：${{ github.event.issue.title }}"
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_USER }}
+          html_body: |
+            <p>收到一篇新投稿，等待审核：</p>
+            <ul>
+              <li><b>标题</b>：${{ github.event.issue.title }}</li>
+              <li><b>投稿者</b>：${{ github.event.issue.user.login }}</li>
+              <li><b>链接</b>：<a href="${{ github.event.issue.html_url }}">打开 Issue 审核</a></li>
+            </ul>
+            <p>内容摘要：</p>
+            <pre>${{ steps.msg.outputs.excerpt }}</pre>
+
+      # ---------- 渠道 2：Server酱微信推送 ----------
+      - name: Server酱微信通知
+        if: env.SERVERCHAN_KEY != ''
+        env:
+          EXCERPT: ${{ steps.msg.outputs.excerpt }}
+        run: |
+          curl -s --max-time 30 "https://sctapi.ftqq.com/${SERVERCHAN_KEY}.send" \
+            --data-urlencode "title=📩 新投稿：${ISSUE_TITLE}" \
+            --data-urlencode "desp=**投稿者**：${ISSUE_AUTHOR}
+          [点此打开 Issue 审核](${ISSUE_URL})
+
+          ${EXCERPT}" >/dev/null || true
+
+      # ---------- 渠道 3：Telegram 推送 ----------
+      - name: Telegram 通知
+        if: env.TG_BOT_TOKEN != '' && env.TG_CHAT_ID != ''
+        env:
+          EXCERPT: ${{ steps.msg.outputs.excerpt }}
+        run: |
+          curl -s --max-time 30 "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TG_CHAT_ID}" \
+            --data-urlencode "text=📩 新投稿：${ISSUE_TITLE}
+          投稿者：${ISSUE_AUTHOR}
+          ${ISSUE_URL}
+          ${EXCERPT}" >/dev/null || true
