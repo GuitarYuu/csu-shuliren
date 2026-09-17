@@ -1,22 +1,25 @@
 # RESUME · 项目状态检查点
 
-## 状态：代码全部生成完毕（2026-09-17），等待站长按 DEPLOY.md 部署
+## 状态：GitHub 侧已全部上线（2026-09-17），剩余 Cloudflare Worker 配置需站长手动完成
 
 ## 已完成
-- [x] MkDocs Material 站点：mkdocs.yml（MathJax + awesome-pages）、首页 index.md（投稿表单）、示例笔记
-- [x] 前端脚本：mathjax.js / protect.js（弱防复制）/ guard.js（github.io 跳转守卫）/ submit.js（投稿表单）
-- [x] Cloudflare Worker：worker.js（反代 + public/auth 双模式密钥鉴权 + 一次性/限时密钥 + 访问申请 + 投稿转 Issue + 限流）
-- [x] GitHub Actions：auto-publish.yml（publish 标签→发文→提交 main→触发构建）、build-site.yml（mkdocs→Pages）
-- [x] scripts/build-post.js（Issue→文章）、scripts/gen-token.js（本地密钥生成/撤销）
-- [x] DEPLOY.md 部署运维手册、本文档
+- [x] 全套代码：MkDocs 站点 / Worker / Actions / 脚本 / 文档（语法与投稿解析均已实测）
+- [x] 仓库已创建：https://github.com/GuitarYuu/csu-shuliren （Public）
+- [x] 代码已推送 main（含 mkdocs.yml 的 site_url 已回填）
+- [x] Pages 已启用（Source: GitHub Actions），首次构建成功
+- [x] 站点已上线：https://guitaryuu.github.io/csu-shuliren/ （HTTP 200 已验证）
+- [x] 仓库描述与主页链接已设置
 
-## 待站长执行（按 DEPLOY.md 顺序）
-1. 推送本目录到 GitHub 新仓库（Public）
-2. 仓库 Settings → Pages → Source 选「GitHub Actions」
-3. 创建 Fine-grained PAT（仅该仓库 Issues: Read and write）
-4. Cloudflare：建 KV 命名空间 → 建 Worker 粘贴 worker.js → 绑 KV（变量名 `KV`）→ 配置变量/Secret
-5. ★ 回填占位符：`docs/javascripts/guard.js` 的 OFFICIAL_ENTRY、`docs/javascripts/submit.js` 的 WORKER_ORIGIN（Worker 地址）；`mkdocs.yml` 的 site_url（可选）→ 推送
-6. 按 DEPLOY.md 步骤 7 验收清单跑通全流程
+## 待站长执行（Cloudflare 侧，约 10 分钟，详见 DEPLOY.md 步骤 3–5）
+1. 创建 Fine-grained PAT（仅本仓库 Issues: Read and write）
+2. Cloudflare 建 KV 命名空间 `csu-shuliren-kv`
+3. 创建 Worker `csu-shuliren`，粘贴 `worker/worker.js`，绑定 KV（变量名 `KV`），
+   配置变量：`ACCESS_MODE=public`（或 `auth`）、`UPSTREAM=https://guitaryuu.github.io/csu-shuliren`、
+   `GITHUB_REPO=GuitarYuu/csu-shuliren`；Secret：`GITHUB_TOKEN`
+4. ★ 拿到 Worker 地址后回填两处占位符并推送（会自动重新构建站点）：
+   - `docs/javascripts/guard.js` → `OFFICIAL_ENTRY`
+   - `docs/javascripts/submit.js` → `WORKER_ORIGIN`
+5. 按 DEPLOY.md 步骤 7 验收清单跑通投稿→发布全流程
 
 ## 关键命令
 ```bash
@@ -26,5 +29,7 @@ node scripts/gen-token.js timed 30 [备注]    # 限时密钥
 node scripts/gen-token.js revoke <密钥>      # 撤销（需 CF_ACCOUNT_ID/KV_NAMESPACE_ID/CF_API_TOKEN）
 ```
 
-## 未决问题
-- 无。占位符需站长部署时填入自己的 Worker 地址。
+## 已知环境注意事项
+- 本机全局 git 配置了 gh-proxy.com 镜像重写（不支持认证推送）；推送时需临时
+  `git config --global --unset-all url.https://gh-proxy.com/https://github.com/.insteadof`，
+  推完恢复。Windows 下 LF/CRLF 警告无害（仓库内已归一化为 LF）。
