@@ -119,9 +119,19 @@ async function proxySite(request, env, url) {
   headers.delete("set-cookie");
   headers.delete("content-encoding");
   headers.delete("content-length");
-  if ((env.ACCESS_MODE || "public") === "auth") {
-    const ct = headers.get("Content-Type") || "";
-    if (ct.includes("text/html")) headers.set("Cache-Control", "private, no-store");
+  const isAuth = (env.ACCESS_MODE || "public") === "auth";
+  const ct = headers.get("Content-Type") || "";
+  if (isAuth && ct.includes("text/html")) {
+    // 鉴权模式禁止边缘缓存 HTML，防止已授权内容泄露给未授权访客
+    headers.set("Cache-Control", "private, no-store");
+  }
+  // 公开模式：给 HTML 注入“公开”标记，前端 resilience.js 据此决定样式加载失败时能否回退 github.io
+  if (!isAuth && ct.includes("text/html")) {
+    let html = await resp.text();
+    const marker = '<meta name="csu-access" content="public">';
+    if (/<\/head>/i.test(html)) html = html.replace(/<\/head>/i, marker + "</head>");
+    else html = marker + html;
+    return new Response(html, { status: resp.status, headers });
   }
   return new Response(resp.body, { status: resp.status, headers });
 }
