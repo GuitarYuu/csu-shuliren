@@ -35,7 +35,8 @@ jobs:
         run: |
           {
             echo "excerpt<<CSU_EOF"
-            printf '%s' "$ISSUE_BODY" | head -c 600
+            printf '%s' "${ISSUE_BODY:0:600}"
+            echo ""
             echo "CSU_EOF"
           } >> "$GITHUB_OUTPUT"
 
