@@ -336,6 +336,25 @@
   color: var(--md-default-fg-color--light);
 }
 
+/* ---------- 语言切换按钮（顶栏） ---------- */
+.md-header__inner .csu-lang-btn {
+  width: auto;
+  padding: 0 0.7em;
+  margin-left: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--md-default-fg-color);
+  cursor: pointer;
+}
+.md-header__inner .csu-lang-btn:hover {
+  border-color: var(--csu-violet);
+  color: var(--csu-violet);
+  background: transparent;
+}
+
 /* ---------- 首页副标题（兼容旧版） ---------- */
 .md-typeset .hero-sub {
   font-size: 1.02em;

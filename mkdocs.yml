@@ -56,4 +56,5 @@ extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
   - javascripts/protect.js        # 弱防复制：禁右键/禁选中/拦 Ctrl+C
   - javascripts/guard.js          # github.io 直连 → 自动跳回 Worker 正式入口
+  - javascripts/i18n.js           # 站点布局中英文切换（顶栏 EN/中 按钮）
   - javascripts/submit.js         # 首页投稿表单提交逻辑
