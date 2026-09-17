@@ -93,14 +93,6 @@
       zh: "LaTeX 行内公式用 <code>$...$</code>、独立公式用 <code>$$...$$</code>，代码用三反引号围栏；",
       en: "Use <code>$...$</code> for inline LaTeX, <code>$$...$$</code> for display math, and triple backticks for code blocks;",
     },
-    "note.3": {
-      zh: "<strong>通过</strong>：文章自动生成并部署上线，Issue 自动关闭并通知你；<strong>拒绝</strong>：不生成任何文件；",
-      en: "<strong>Approved</strong>: the article is generated and deployed automatically, and the Issue is closed with a notice; <strong>Rejected</strong>: nothing is published;",
-    },
-    "note.4": {
-      zh: "站点启用了轻量防复制（禁右键 / 禁选中），<strong>该措施无法阻止截图与拍照，仅供参考</strong>；",
-      en: "A lightweight copy guard is enabled (right-click / selection disabled). <strong>It cannot prevent screenshots or photos, and is for reference only</strong>;",
-    },
     "note.5": {
       zh: "如需撤稿或修改，在对应 Issue 下留言联系管理员。",
       en: "To withdraw or revise a post, leave a comment on the corresponding Issue to contact the admin.",

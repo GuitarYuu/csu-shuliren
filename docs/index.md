@@ -79,7 +79,5 @@ description: CSU数理人 · 中南大学数理学习笔记共享站
 <ol>
   <li data-i18n="note.1">内容须为<strong>本人原创或已获授权</strong>，禁止抄袭与未授权转载；</li>
   <li data-i18n="note.2">LaTeX 行内公式用 <code>$...$</code>、独立公式用 <code>$$...$$</code>，代码用三反引号围栏；</li>
-  <li data-i18n="note.3"><strong>通过</strong>：文章自动生成并部署上线，Issue 自动关闭并通知你；<strong>拒绝</strong>：不生成任何文件；</li>
-  <li data-i18n="note.4">站点启用了轻量防复制（禁右键 / 禁选中），<strong>该措施无法阻止截图与拍照，仅供参考</strong>；</li>
   <li data-i18n="note.5">如需撤稿或修改，在对应 Issue 下留言联系管理员。</li>
 </ol>
