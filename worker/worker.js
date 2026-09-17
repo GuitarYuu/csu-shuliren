@@ -8,21 +8,25 @@
  *   3) 访客 API：
  *        POST /api/apply   → 申请访问密钥（存 KV，站长在 CF 后台人工审核）
  *        POST /api/submit  → Markdown 投稿（自动在 GitHub 仓库创建 Issue）
+ *        POST /api/upload  → 资料汇总附件上传（≤20MB，暂存 KV）
+ *        GET  /files/<id>  → 附件下载（publish 后由 Action 转存进仓库）
  *
  * KV 数据约定：
- *   token:<key>   访问密钥  {type:"once"|"timed", exp?:毫秒时间戳, note, created}
- *   sess:<sid>    浏览会话  {t?:"限时密钥原文", once?:true, note, ts}（自动过期）
- *   apply:<id>    访问申请  {status:"pending", name, contact, reason, ip, ts}
- *   rl:*          每 IP 每日限流计数（自动过期）
+ *   token:<key>     访问密钥  {type:"once"|"timed", exp?, note, created}
+ *   sess:<sid>      浏览会话  {t?:"限时密钥原文", once?:true, note, ts}
+ *   apply:<id>      访问申请  {status:"pending", name, contact, reason, ip, ts}
+ *   file:<id>       附件二进制（ArrayBuffer）
+ *   filemeta:<id>   附件元信息 {name, ext, size, ip, ts}
+ *   rl:*            每 IP 每日限流计数（自动过期）
  *
  * Cloudflare 后台配置：
  *   KV 绑定   KV                → 一个 KV 命名空间
  *   变量      ACCESS_MODE       = public | auth
  *             UPSTREAM          = https://<用户名>.github.io/<仓库名>（末尾不带 /）
  *             GITHUB_REPO       = <用户名>/<仓库名>
- *             SESSION_TTL_HOURS = 24（可选，一次性密钥兑换后的会话时长）
- *             SUBMIT_DAILY_LIMIT= 5（可选，每 IP 每日投稿上限）
- *             APPLY_DAILY_LIMIT = 10（可选，每 IP 每日申请上限）
+ *             SESSION_TTL_HOURS = 24（可选）
+ *             SUBMIT_DAILY_LIMIT= 5（可选）
+ *             APPLY_DAILY_LIMIT = 10（可选）
  *   密钥      GITHUB_TOKEN      → Fine-grained PAT，仅该仓库 Issues: Read and write
  * ============================================================================
  */
@@ -30,9 +34,15 @@
 const COOKIE_NAME = "csu_session";
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const ALLOWED_TYPES = ["经验分享", "灵光一现", "资料汇总"];
+const ALLOWED_EXTS = new Set([
+  "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt", "md", "epub", "mobi",
+  "zip", "rar", "7z", "png", "jpg", "jpeg", "gif", "webp",
+]);
 
 export default {
   async fetch(request, env) {
@@ -46,12 +56,16 @@ export default {
       /* ---------- 访客 API（免鉴权，靠限流 + 字段长度上限防滥用） ---------- */
       if (url.pathname === "/api/apply") return await handleApply(request, env);
       if (url.pathname === "/api/submit") return await handleSubmit(request, env);
+      if (url.pathname === "/api/upload") return await handleUpload(request, env);
+
+      /* ---------- 附件下载：不可猜测的随机 ID 即访问凭证 ---------- */
+      const mFile = url.pathname.match(/^\/files\/([A-Za-z0-9]{4,32})$/);
+      if (mFile) return await handleFile(env, mFile[1]);
 
       /* ---------- 站点：公开 / 鉴权 两种模式 ---------- */
       if ((env.ACCESS_MODE || "public") === "auth") {
         const key = url.searchParams.get("key");
         if (key) {
-          // 携带密钥访问：兑换成功 → 发会话 Cookie 并去掉 key 重定向（密钥不留在地址栏）
           const sid = await redeemKey(env, key);
           if (sid) {
             return new Response(null, {
@@ -74,15 +88,12 @@ export default {
   },
 };
 
-/* ============================================================================
- * 站点反向代理
- * ========================================================================== */
+/* ============================ 站点反向代理 ============================ */
 
 async function proxySite(request, env, url) {
   const base = (env.UPSTREAM || "").replace(/\/+$/, "");
   if (!base) return new Response("Worker 未配置 UPSTREAM 环境变量", { status: 500 });
 
-  // 不转发 Cookie（会话凭据不外泄给上游），只转发必要的请求头
   const fwd = new Headers();
   for (const h of ["accept", "accept-language", "range", "user-agent"]) {
     const v = request.headers.get(h);
@@ -93,7 +104,7 @@ async function proxySite(request, env, url) {
     method: request.method,
     headers: fwd,
     body: ["GET", "HEAD"].includes(request.method) ? undefined : request.body,
-    redirect: "manual", // 301/302 必须自己改写透传，否则相对资源路径会错位
+    redirect: "manual",
   });
 
   if ([301, 302, 303, 307, 308].includes(resp.status)) {
@@ -106,78 +117,59 @@ async function proxySite(request, env, url) {
 
   const headers = new Headers(resp.headers);
   headers.delete("set-cookie");
-  headers.delete("content-encoding"); // fetch 已解压，长度随之变化
+  headers.delete("content-encoding");
   headers.delete("content-length");
   if ((env.ACCESS_MODE || "public") === "auth") {
-    // 鉴权模式下禁止 Cloudflare 边缘缓存 HTML，防止已授权内容被缓存后泄露给未授权访客
     const ct = headers.get("Content-Type") || "";
     if (ct.includes("text/html")) headers.set("Cache-Control", "private, no-store");
   }
   return new Response(resp.body, { status: resp.status, headers });
 }
 
-/* ============================================================================
- * 密钥与会话
- * ========================================================================== */
+/* ============================ 密钥与会话 ============================ */
 
 function sessionTtl(env) {
   const h = parseInt(env.SESSION_TTL_HOURS || "24", 10);
   return (Number.isFinite(h) && h > 0 ? h : 24) * 3600;
 }
 
-/** 当前请求是否携带有效会话 Cookie */
 async function hasValidSession(request, env) {
   const m = (request.headers.get("Cookie") || "").match(new RegExp(`${COOKIE_NAME}=([A-Za-z0-9_-]+)`));
   if (!m) return false;
   const raw = await env.KV.get(`sess:${m[1]}`);
   if (!raw) return false;
   let sess;
-  try {
-    sess = JSON.parse(raw);
-  } catch {
-    return false;
-  }
+  try { sess = JSON.parse(raw); } catch { return false; }
   if (sess.t) {
-    // 限时密钥的会话：密钥一旦被撤销或过期，会话立即失效
     const tok = await env.KV.get(`token:${sess.t}`);
     if (!tok) return false;
     try {
       const t = JSON.parse(tok);
       if (t.type !== "timed" || (t.exp && t.exp < Date.now())) return false;
-    } catch {
-      return false;
-    }
+    } catch { return false; }
   }
   return true;
 }
 
-/** 校验并兑换密钥；一次性密钥兑换后立即从 KV 删除（不可复用） */
 async function redeemKey(env, key) {
   if (!/^[A-Za-z0-9_-]{8,64}$/.test(key)) return null;
   const raw = await env.KV.get(`token:${key}`);
   if (!raw) return null;
   let tok;
-  try {
-    tok = JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  try { tok = JSON.parse(raw); } catch { return null; }
   if (tok.type !== "once" && tok.type !== "timed") return null;
   if (tok.type === "timed" && tok.exp && tok.exp < Date.now()) return null;
 
   const sid = crypto.randomUUID().replace(/-/g, "");
-  const sess =
-    tok.type === "once"
-      ? { once: true, note: tok.note || "", ts: Date.now() }
-      : { t: key, note: tok.note || "", ts: Date.now() };
+  const sess = tok.type === "once"
+    ? { once: true, note: tok.note || "", ts: Date.now() }
+    : { t: key, note: tok.note || "", ts: Date.now() };
   await env.KV.put(`sess:${sid}`, JSON.stringify(sess), { expirationTtl: sessionTtl(env) });
   if (tok.type === "once") await env.KV.delete(`token:${key}`);
   return sid;
 }
 
-/* ============================================================================
- * POST /api/apply —— 访问申请（存 KV，等站长审核后手动发密钥）
- * ========================================================================== */
+/* ==================== POST /api/apply 访问申请 ==================== */
 
 async function handleApply(request, env) {
   if (request.method !== "POST") return json({ ok: false, error: "method not allowed" }, 405);
@@ -198,14 +190,12 @@ async function handleApply(request, env) {
   await env.KV.put(
     `apply:${id}`,
     JSON.stringify({ status: "pending", name, contact, reason, ip, ts: Date.now() }),
-    { expirationTtl: 180 * 86400 } // 180 天后自动清理
+    { expirationTtl: 180 * 86400 }
   );
   return json({ ok: true, message: "申请已提交，管理员审核通过后会将密钥发到你的联系方式。" });
 }
 
-/* ============================================================================
- * POST /api/submit —— Markdown 投稿 → GitHub Issue
- * ========================================================================== */
+/* ==================== POST /api/submit 投稿→Issue ==================== */
 
 async function handleSubmit(request, env) {
   if (request.method !== "POST") return json({ ok: false, error: "method not allowed" }, 405);
@@ -227,14 +217,27 @@ async function handleSubmit(request, env) {
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return json({ ok: false, error: "邮箱格式不正确" }, 400);
   }
-  // 发布栏目白名单：经验分享 / 灵光一现 / 资料汇总
-  const ALLOWED_TYPES = ["经验分享", "灵光一现", "资料汇总"];
+
+  // 发布栏目白名单
   const rtype = ALLOWED_TYPES.includes(body.type) ? body.type : "经验分享";
 
-  // 元信息块（单行字段）放在 Issue 正文最顶部，auto-publish 工作流据此生成文章 front matter；
-  // 之后的内容为投稿原文，一字不改。
+  // 标签（可选）：中英文逗号/顿号/分号分隔，最多 5 个、每个 ≤20 字符
+  const rawTags = Array.isArray(body.tags)
+    ? body.tags
+    : String(body.tags || "").split(/[,，、;；]/);
+  const tags = rawTags
+    .map((t) => clip(t, 20))
+    .filter(Boolean)
+    .slice(0, 5);
+
+  // 附件（资料汇总）：/api/upload 返回的 id + 原始文件名
+  const fileId = /^[A-Za-z0-9]{4,32}$/.test(body.fileId || "") ? body.fileId : "";
+  const fileName = fileId ? clip(body.fileName, 120).replace(/[\\/:*?"<>|#&[\]{}]+/g, "-") : "";
+  const fileSize = parseInt(body.fileSize, 10);
+  const fileSizeOk = fileId && Number.isFinite(fileSize) && fileSize >= 0 ? String(fileSize) : "";
+
   const now = new Date().toISOString();
-  const line = (s) => String(s).replace(/[\r\n]+/g, " "); // 元信息必须单行
+  const line = (s) => String(s).replace(/[\r\n]+/g, " ");
   const issueBody =
     "<!--CSU-META\n" +
     `title: ${line(title)}\n` +
@@ -242,6 +245,8 @@ async function handleSubmit(request, env) {
     `email: ${line(email || "-")}\n` +
     `type: ${line(rtype)}\n` +
     `date: ${now}\n` +
+    (tags.length ? `tags: ${line(tags.join(", "))}\n` : "") +
+    (fileId ? `file: ${fileId}\nfilename: ${line(fileName)}\nfilesize: ${fileSizeOk}\n` : "") +
     "CSU-META-->\n\n" +
     content + "\n";
 
@@ -254,7 +259,7 @@ async function handleSubmit(request, env) {
       "User-Agent": "csu-shuliren-worker",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ title: `[投稿] ${title}`, body: issueBody }),
+    body: JSON.stringify({ title: `[投稿][${rtype}] ${title}`, body: issueBody }),
   });
 
   if (!r.ok) {
@@ -265,14 +270,82 @@ async function handleSubmit(request, env) {
   return json({ ok: true, issue_url: issue.html_url, message: "投稿成功！已进入人工审核队列。" });
 }
 
-/* ============================================================================
- * 鉴权失败页：密钥进入 + 访问申请 双卡片
- * ========================================================================== */
+/* ==================== POST /api/upload 附件上传 ==================== */
+
+async function handleUpload(request, env) {
+  if (request.method !== "POST") return json({ ok: false, error: "method not allowed" }, 405);
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  if (!(await rateLimit(env, ip, "upload", 10))) {
+    return json({ ok: false, error: "上传过于频繁，请明天再试。" }, 429);
+  }
+
+  let form;
+  try {
+    form = await request.formData();
+  } catch {
+    return json({ ok: false, error: "请求格式错误（需 multipart 表单）" }, 400);
+  }
+  const file = form.get("file");
+  if (!file || typeof file === "string") return json({ ok: false, error: "未找到文件" }, 400);
+  if (file.size > MAX_FILE_SIZE) return json({ ok: false, error: "文件超过 20MB 限制" }, 413);
+  if (file.size === 0) return json({ ok: false, error: "文件为空" }, 400);
+
+  const name = clip(file.name, 120) || "file";
+  const ext = (name.split(".").pop() || "").toLowerCase();
+  if (!ALLOWED_EXTS.has(ext)) return json({ ok: false, error: "不支持的文件格式：" + ext }, 415);
+
+  const id = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+  const buf = await file.arrayBuffer();
+  await env.KV.put(`file:${id}`, buf);
+  await env.KV.put(
+    `filemeta:${id}`,
+    JSON.stringify({ name, ext, size: file.size, ip, ts: Date.now() })
+  );
+  return json({ ok: true, id, name, size: file.size });
+}
+
+/* ==================== GET /files/<id> 附件下载 ==================== */
+
+const MIME = {
+  pdf: "application/pdf",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ppt: "application/vnd.ms-powerpoint",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  xls: "application/vnd.ms-excel",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  txt: "text/plain; charset=utf-8",
+  md: "text/markdown; charset=utf-8",
+  epub: "application/epub+zip",
+  zip: "application/zip",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+};
+
+async function handleFile(env, id) {
+  const metaRaw = await env.KV.get(`filemeta:${id}`);
+  if (!metaRaw) return json({ ok: false, error: "文件不存在或已被清理" }, 404);
+  let meta;
+  try { meta = JSON.parse(metaRaw); } catch { return json({ ok: false, error: "文件信息损坏" }, 500); }
+  const buf = await env.KV.get(`file:${id}`, { type: "arrayBuffer" });
+  if (!buf) return json({ ok: false, error: "文件不存在或已被清理" }, 404);
+
+  return new Response(buf, {
+    headers: {
+      "Content-Type": MIME[meta.ext] || "application/octet-stream",
+      "Content-Disposition": `attachment; filename="file-${id}.${meta.ext}"; filename*=UTF-8''${encodeURIComponent(meta.name || "file")}`,
+      "Cache-Control": "public, max-age=86400",
+    },
+  });
+}
+
+/* ==================== 鉴权失败页 ==================== */
 
 function denyPage(msg) {
-  const banner = msg
-    ? `<p class="sub" style="color:#dc2626">⚠ ${msg}</p>`
-    : "";
+  const banner = msg ? `<p class="sub" style="color:#dc2626">⚠ ${msg}</p>` : "";
   const html = `<!doctype html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>访问验证 · CSU数理人</title>
@@ -336,20 +409,14 @@ return false}
   });
 }
 
-/* ============================================================================
- * 工具函数
- * ========================================================================== */
+/* ============================ 工具函数 ============================ */
 
 function clip(v, max) {
   return typeof v === "string" ? v.trim().slice(0, max) : "";
 }
 
 async function readJson(request) {
-  try {
-    return await request.json();
-  } catch {
-    return null;
-  }
+  try { return await request.json(); } catch { return null; }
 }
 
 function json(obj, status = 200) {
@@ -359,7 +426,6 @@ function json(obj, status = 200) {
   });
 }
 
-/** 每 IP 每日限流：KV 计数 + 24h 过期 */
 async function rateLimit(env, ip, kind, max) {
   const k = `rl:${kind}:${ip}`;
   const cur = parseInt((await env.KV.get(k)) || "0", 10);

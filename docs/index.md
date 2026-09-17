@@ -62,12 +62,19 @@ description: CSU数理人 · 中南大学数理学习笔记共享站
     <label class="csu-type-opt tone-amber"><input type="radio" name="type" value="灵光一现"><b data-i18n="opt.ins">💡 灵光一现</b><small data-i18n="opt.ins.small">猜想 · 点子 · 小证明</small></label>
     <label class="csu-type-opt tone-blue"><input type="radio" name="type" value="资料汇总"><b data-i18n="opt.res">📚 资料汇总</b><small data-i18n="opt.res.small">书单 · 网课 · 工具</small></label>
   </div>
+  <div id="csu-file-box" hidden>
+    <label for="csu-f-file" data-i18n="form.file">📎 附加文件（可选：PDF / Word / PPT / 压缩包等，≤ 20MB）</label>
+    <input id="csu-f-file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md,.epub,.mobi,.zip,.rar,.7z,.png,.jpg,.jpeg,.gif,.webp">
+    <small id="csu-file-hint" class="csu-file-hint"></small>
+  </div>
   <label for="csu-f-title" data-i18n="form.title">文章标题 <span>*</span></label>
   <input id="csu-f-title" name="title" maxlength="120" data-i18n-ph="ph.title" placeholder="例如：用行列式求四面体体积的一个小技巧" required>
   <label for="csu-f-author" data-i18n="form.author">作者署名 <span>*</span></label>
   <input id="csu-f-author" name="author" maxlength="40" data-i18n-ph="ph.author" placeholder="你的名字或昵称" required>
   <label for="csu-f-email" data-i18n="form.email">联系邮箱 <span>*</span>（仅管理员可见，用于通知审核结果）</label>
   <input id="csu-f-email" name="email" type="email" maxlength="80" placeholder="you@example.com" required>
+  <label for="csu-f-tags" data-i18n="form.tags">标签（可选，逗号分隔，最多 5 个）</label>
+  <input id="csu-f-tags" name="tags" maxlength="120" data-i18n-ph="ph.tags" placeholder="数分, 高代, 考研">
   <label for="csu-f-content" data-i18n="form.content">正文 · 标准 Markdown（支持 LaTeX 公式）<span>*</span></label>
   <textarea id="csu-f-content" name="content" rows="14" data-i18n-ph="ph.content" placeholder="# 小标题&#10;&#10;行内公式 $e^{i\pi}+1=0$，独立公式：&#10;&#10;$$\int_0^1 x^2\,dx=\frac{1}{3}$$" required></textarea>
   <button type="submit" id="csu-f-btn" data-i18n="form.submit">📮 提交投稿</button>

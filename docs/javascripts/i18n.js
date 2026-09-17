@@ -84,6 +84,14 @@
       zh: "正文 · 标准 Markdown（支持 LaTeX 公式）<span>*</span>",
       en: "Content · standard Markdown (LaTeX supported) <span>*</span>",
     },
+    "form.file": {
+      zh: "📎 附加文件（可选：PDF / Word / PPT / 压缩包等，≤ 20MB）",
+      en: "📎 Attachment (optional: PDF / Word / PPT / archives, ≤ 20MB)",
+    },
+    "form.tags": {
+      zh: "标签（可选，逗号分隔，最多 5 个）",
+      en: "Tags (optional, comma-separated, up to 5)",
+    },
     "form.submit": { zh: "📮 提交投稿", en: "📮 Submit" },
     "note.1": {
       zh: "内容须为<strong>本人原创或已获授权</strong>，禁止抄袭与未授权转载；",
@@ -151,6 +159,7 @@
         zh: "# 小标题\n\n行内公式 $e^{i\\pi}+1=0$，独立公式：\n\n$$\\int_0^1 x^2\\,dx=\\frac{1}{3}$$",
         en: "# A subtitle\n\nInline math $e^{i\\pi}+1=0$, display math:\n\n$$\\int_0^1 x^2\\,dx=\\frac{1}{3}$$",
       },
+      "ph.tags": { zh: "数分, 高代, 考研", en: "calculus, algebra, grad-school" },
     };
     document.querySelectorAll("[data-i18n-ph]").forEach(function (el) {
       var entry = PH[el.getAttribute("data-i18n-ph")];

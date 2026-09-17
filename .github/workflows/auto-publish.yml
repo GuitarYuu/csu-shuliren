@@ -29,12 +29,42 @@ jobs:
       - name: 检出仓库
         uses: actions/checkout@v4
 
+      - name: 下载资料汇总附件（如有）
+        id: attachment
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          WORKER_URL: https://csu-shuliren.2544864177.workers.dev
+        run: |
+          FID=$(printf '%s' "$ISSUE_BODY" | grep -m1 '^file: ' | sed 's/^file: *//' | tr -d '\r')
+          FNAME=$(printf '%s' "$ISSUE_BODY" | grep -m1 '^filename: ' | sed 's/^filename: *//' | tr -d '\r')
+          PATH_OUT=""
+          if [ -n "$FID" ]; then
+            if printf '%s' "$FID" | grep -qE '^[A-Za-z0-9]{4,32}$'; then
+              SAFE=$(printf '%s' "$FNAME" | sed 's#[/\\:*?"<>|#&]#-#g' | cut -c1-80)
+              [ -n "$SAFE" ] || SAFE="file"
+              DEST="docs/posts/resources/files/${FID}-${SAFE}"
+              mkdir -p "$(dirname "$DEST")"
+              if curl -fsSL --max-time 180 "${WORKER_URL}/files/${FID}" -o "$DEST"; then
+                PATH_OUT="$DEST"
+                echo "附件已下载：$DEST（$(wc -c < "$DEST") 字节）"
+              else
+                echo "::warning::附件下载失败（可能已被清理），文章将不包含下载链接"
+                rm -f "$DEST"
+              fi
+            else
+              echo "::warning::附件 ID 格式非法，跳过下载"
+            fi
+          fi
+          echo "path=$PATH_OUT" >> "$GITHUB_OUTPUT"
+
       - name: 由 Issue 生成文章文件
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          FILE_PATH: ${{ steps.attachment.outputs.path }}
+          WORKER_URL: https://csu-shuliren.2544864177.workers.dev
         run: node scripts/build-post.js
 
       - name: 提交并推送到 main

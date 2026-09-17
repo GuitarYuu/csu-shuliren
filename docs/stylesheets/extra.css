@@ -355,6 +355,70 @@
   background: transparent;
 }
 
+/* ---------- 附件上传 ---------- */
+.md-typeset .csu-form input[type="file"] {
+  padding: 0.45em 0.6em;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+.md-typeset .csu-form input[type="file"]::file-selector-button {
+  margin-right: 0.8em;
+  padding: 0.35em 0.9em;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 0.4rem;
+  background: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.md-typeset .csu-file-hint {
+  display: block;
+  margin-top: 0.35em;
+  font-size: 0.72rem;
+  color: var(--md-default-fg-color--light);
+}
+.md-typeset .csu-file-hint.err {
+  color: #c62828;
+}
+
+/* ---------- 文章标签 chips ---------- */
+.md-typeset .csu-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin: -0.4em 0 1.2em !important;
+}
+.md-typeset .csu-tag {
+  display: inline-block;
+  padding: 0.12em 0.75em;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  color: var(--md-default-fg-color--light);
+  border: 1px solid var(--md-default-fg-color--lighter);
+  background: var(--md-default-bg-color);
+}
+
+/* ---------- 附件下载按钮 ---------- */
+.md-typeset .csu-download {
+  margin: 0.4em 0 1.4em !important;
+}
+.md-typeset .csu-dl-btn {
+  display: inline-block;
+  padding: 0.55em 1.3em;
+  border-radius: 0.6rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fff !important;
+  background: linear-gradient(120deg, var(--csu-violet), var(--csu-blue));
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.md-typeset .csu-dl-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  color: #fff !important;
+}
+
 /* ---------- 首页副标题（兼容旧版） ---------- */
 .md-typeset .hero-sub {
   font-size: 1.02em;
