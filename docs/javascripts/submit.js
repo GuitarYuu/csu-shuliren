@@ -142,7 +142,7 @@
     var url = buildGithubIssueUrl(p);
     var tooLong = url.length > MAX_URL_LEN;
     var html =
-      "⚠ " + esc(MSG.fallbackTitle) + "<br>" + esc(MSG.fallbackHint) + "<br><br>";
+      esc(MSG.fallbackTitle) + "<br>" + esc(MSG.fallbackHint) + "<br><br>";
     if (tooLong) {
       html += esc(MSG.fallbackLong) + "<br><br>";
     }
