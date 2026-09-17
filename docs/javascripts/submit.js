@@ -9,7 +9,7 @@
  */
 (function () {
   var WORKER_ORIGIN = "https://csu-shuliren.2544864177.workers.dev";
-  var ISSUE_NEW_URL = "https://github.com/GuitarYuu/csu-shuliren/issues/new";
+  var ISSUE_NEW_URL = "https://github.com/GuitarYuu/csu-submissions/issues/new";
   var MAX_FILE_SIZE = 20 * 1024 * 1024;
   var MAX_URL_LEN = 7500;
   var ALLOWED_EXTS = [

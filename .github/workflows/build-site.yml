@@ -27,6 +27,16 @@ jobs:
       - name: 检出仓库
         uses: actions/checkout@v4
 
+      - name: 安装 poppler（附件全文提取）
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+
+      - name: 拉取收件箱中已审核的投稿
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INBOX_REPO: GuitarYuu/csu-submissions
+          WORKER_URL: https://csu-shuliren.2544864177.workers.dev
+        run: node scripts/fetch-published.js
+
       - name: 安装 Python
         uses: actions/setup-python@v5
         with:

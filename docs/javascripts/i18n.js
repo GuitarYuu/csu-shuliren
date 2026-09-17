@@ -77,8 +77,8 @@
     "form.title": { zh: "文章标题 <span>*</span>", en: "Title <span>*</span>" },
     "form.author": { zh: "作者署名 <span>*</span>", en: "Author <span>*</span>" },
     "form.email": {
-      zh: "联系邮箱 <span>*</span>（仅管理员可见，用于通知审核结果）",
-      en: "Email <span>*</span> (visible to admins only, for review notifications)",
+      zh: "联系邮箱 <span>*</span>（将随投稿公开显示，管理员用它通知审核结果）",
+      en: "Email <span>*</span> (shown publicly with your post; admins use it for review updates)",
     },
     "form.content": {
       zh: "正文 · 标准 Markdown（支持 LaTeX 公式）<span>*</span>",

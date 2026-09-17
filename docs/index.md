@@ -71,7 +71,7 @@ description: CSU数理人 · 中南大学数理学习笔记共享站
   <input id="csu-f-title" name="title" maxlength="120" data-i18n-ph="ph.title" placeholder="例如：用行列式求四面体体积的一个小技巧" required>
   <label for="csu-f-author" data-i18n="form.author">作者署名 <span>*</span></label>
   <input id="csu-f-author" name="author" maxlength="40" data-i18n-ph="ph.author" placeholder="你的名字或昵称" required>
-  <label for="csu-f-email" data-i18n="form.email">联系邮箱 <span>*</span>（仅管理员可见，用于通知审核结果）</label>
+  <label for="csu-f-email" data-i18n="form.email">联系邮箱 <span>*</span>（将随投稿公开显示，管理员用它通知审核结果）</label>
   <input id="csu-f-email" name="email" type="email" maxlength="80" placeholder="you@example.com" required>
   <label for="csu-f-tags" data-i18n="form.tags">标签（可选，逗号分隔，最多 5 个）</label>
   <input id="csu-f-tags" name="tags" maxlength="120" data-i18n-ph="ph.tags" placeholder="数分, 高代, 考研">
