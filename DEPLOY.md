@@ -202,6 +202,19 @@ Worker 会把投稿创建为标题带 `[投稿]` 前缀的 Issue，正文首部�
 
 ---
 
+## 附件、标签与收件箱架构（2026-09 新增）
+
+- **三类栏目**：投稿表单可选 经验分享 / 灵光一现 / 资料汇总，文章自动归档到 `docs/posts/experience|insights|resources/`，页面顶部生成彩色类型徽章与标签 chips；
+- **附件上传（资料汇总）**：可选文件（PDF/Word/PPT/压缩包等 ≤20MB）先传至 Worker 暂存 KV；
+- **收件箱仓库**：所有投稿 Issue 存放在独立仓库 `csu-submissions`（网站源码主仓库对投稿者不可见）；Worker 变量 `GITHUB_REPO` 与前端 `submit.js` 均指向收件箱；
+- **发布 = 标签**：在收件箱 Issue 上打 `publish` 标签后，站点构建时自动拉取已审核投稿生成页面（含附件下载按钮，附件转存进仓库后从 github.io 提供下载）；**移除标签即下线**。构建可在主仓库 Actions 页手动触发；
+- **附件全文检索**：PDF / txt / md / docx 附件发布时自动提取全文，以折叠块附在文末，进入站内搜索索引；扫描版 PDF（纯图片）无法提取；
+- **KV 附件清理**：附件以 KV 为源、构建时转存，暂不自动删除；可在 CF 控制台 KV 按 `file:*` / `filemeta:*` 前缀手动清理旧文件；
+- **新投稿通知**：notify.yml 工作流位于收件箱仓库，支持 QQ 邮箱 / Server酱 / Telegram（对应 Secrets：`MAIL_TO`/`MAIL_USER`/`MAIL_PASS`、`SERVERCHAN_KEY`、`TG_BOT_TOKEN`/`TG_CHAT_ID`，已在收件箱仓库配置 QQ 邮箱）；
+- **投稿双通道**：在线通道（Worker）+ GitHub 直投备用通道（`csu-submissions/issues/new` 预填链接，国内可用）；换 Worker 域名时需同步修改 `guard.js`、`submit.js`、主仓库 `auto-publish` 已废弃无需管、以及 **build-site.yml 与收件箱 notify.yml 中硬编码的 `WORKER_URL`**。
+
+---
+
 ## 安全边界与重要免责声明
 
 1. **访客权限模型**：GitHub Token 只存于 Worker 加密 Secret，且仅有该仓库 `Issues: Read and write` 权限——访客的任何操作都只能产生 Issue / KV 记录，**无法写入或修改网站源码**；发布动作只由你的 GitHub 账号触发。
