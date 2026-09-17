@@ -419,6 +419,30 @@
   color: #fff !important;
 }
 
+/* ---------- 附件全文折叠块（站内搜索用） ---------- */
+.md-typeset .csu-fulltext {
+  margin: 1.6em 0;
+  font-size: 0.78rem;
+}
+.md-typeset .csu-fulltext summary {
+  font-weight: 600;
+  color: var(--md-default-fg-color--light);
+  cursor: pointer;
+}
+.md-typeset .csu-fulltext-pre {
+  max-height: 420px;
+  overflow: auto;
+  margin: 0.6em 0 0;
+  padding: 0.9em;
+  border-radius: 0.5rem;
+  border: 1px dashed var(--md-default-fg-color--lighter);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--md-default-fg-color--light);
+}
+
 /* ---------- 首页副标题（兼容旧版） ---------- */
 .md-typeset .hero-sub {
   font-size: 1.02em;

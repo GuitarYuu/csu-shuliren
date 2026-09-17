@@ -95,6 +95,19 @@ if (filePath && fs.existsSync(filePath)) {
     `</p>\n`;
 }
 
+// 7) 附件全文文本（发布时从 PDF/txt/md/docx 提取，供站内搜索索引与在线阅读）
+let fulltext = "";
+const textPath = process.env.TEXT_PATH || "";
+if (textPath && fs.existsSync(textPath)) {
+  fulltext = fs.readFileSync(textPath, "utf8").slice(0, 50000).trim();
+}
+let fulltextBlock = "";
+if (fulltext) {
+  fulltextBlock =
+    `\n<details class="csu-fulltext"><summary>📄 附件全文文本（${escHtml(meta.filename || "附件")}）</summary>\n\n` +
+    `<pre class="csu-fulltext-pre">${escHtml(fulltext)}</pre>\n</details>\n`;
+}
+
 const fm = [
   "---",
   `title: ${yq(title)}`,
@@ -107,5 +120,9 @@ const fm = [
   "",
 ].join("\n");
 fs.mkdirSync(path.dirname(file), { recursive: true });
-fs.writeFileSync(file, fm + head + attach + content + "\n");
-console.log("生成文章：", file, "（栏目：" + type + "，标签：" + (tags.join("/") || "无") + "，附件：" + (filePath ? "有" : "无") + "）");
+fs.writeFileSync(file, fm + head + attach + content + "\n" + fulltextBlock);
+console.log(
+  "生成文章：", file,
+  "（栏目：" + type + "，标签：" + (tags.join("/") || "无") + "，附件：" + (filePath ? "有" : "无") +
+  "，全文索引：" + (fulltext ? Math.min(50000, fulltext.length) + " 字符" : "无") + "）"
+);
