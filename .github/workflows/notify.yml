@@ -33,8 +33,11 @@ jobs:
       - name: 汇总通知内容
         id: msg
         run: |
-          EXCERPT=$(printf '%s' "$ISSUE_BODY" | head -c 600)
-          echo "excerpt=$EXCERPT" >> "$GITHUB_OUTPUT"
+          {
+            echo "excerpt<<CSU_EOF"
+            printf '%s' "$ISSUE_BODY" | head -c 600
+            echo "CSU_EOF"
+          } >> "$GITHUB_OUTPUT"
 
       # ---------- 渠道 1：QQ 邮箱邮件 ----------
       - name: 邮件通知
