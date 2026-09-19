@@ -171,15 +171,13 @@ function extractText(dest) {
         ? `<p class="csu-tags">` + tags.map((t) => `<span class="csu-tag"># ${escHtml(t)}</span>`).join("") + `</p>\n`
         : "");
 
-    // 7) 评论区：以收件箱 Issue 为载体（评论/点赞数据由 comments.js 客户端拉取）
-    const commentsBlock =
-      `\n<section class="csu-comments" data-issue="${issue.number}" data-repo="${INBOX}">\n` +
-      `<h2 id="comments">💬 评论与点赞</h2>\n` +
-      `<p class="csu-comments-actions">` +
-      `<a class="csu-cm-btn" href="https://github.com/${INBOX}/issues/${issue.number}" target="_blank" rel="noopener">💬 去评论 / 👍 点赞</a>` +
-      ` <span class="csu-cm-meta" data-role="meta"></span></p>\n` +
-      `<div class="csu-comments-list" data-role="list"><p class="csu-cm-meta">评论加载中…</p></div>\n` +
-      `</section>\n`;
+    // 7) 评论区：giscus（GitHub Discussions）—— 不离开文章页直接评论与点赞
+    const giscusBlock =
+      `\n<h2 id="comments">💬 评论与点赞</h2>\n` +
+      `<p class="csu-comments-hint">基于 GitHub Discussions：登录 GitHub 后即可在下方直接评论，第一个 👍 表情就是点赞。</p>\n` +
+      `<div class="csu-giscus" data-repo="${INBOX}" data-repo-id="R_kgDOUep9cQ" ` +
+      `data-category="Announcements" data-category-id="DIC_kwDOUep9cc4DF-qQ">` +
+      `<em class="csu-cm-meta">评论组件加载中…（未显示请检查网络或刷新页面）</em></div>\n`;
 
     const fm = [
       "---",
@@ -193,8 +191,8 @@ function extractText(dest) {
       "",
     ].join("\n");
 
-    fs.writeFileSync(file, fm + head + attach + content + "\n" + fulltextBlock + commentsBlock);
-    console.log(`✓ ${file}（标签：${tags.join("/") || "无"}，附件：${attachDest ? "有" : "无"}，评论区：Issue#${issue.number}）`);
+    fs.writeFileSync(file, fm + head + attach + content + "\n" + fulltextBlock + giscusBlock);
+    console.log(`✓ ${file}（标签：${tags.join("/") || "无"}，附件：${attachDest ? "有" : "无"}，评论区：giscus）`);
   }
   console.log("完成。");
 })().catch((e) => {
