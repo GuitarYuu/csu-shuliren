@@ -171,6 +171,16 @@ function extractText(dest) {
         ? `<p class="csu-tags">` + tags.map((t) => `<span class="csu-tag"># ${escHtml(t)}</span>`).join("") + `</p>\n`
         : "");
 
+    // 7) 评论区：以收件箱 Issue 为载体（评论/点赞数据由 comments.js 客户端拉取）
+    const commentsBlock =
+      `\n<section class="csu-comments" data-issue="${issue.number}" data-repo="${INBOX}">\n` +
+      `<h2 id="comments">💬 评论与点赞</h2>\n` +
+      `<p class="csu-comments-actions">` +
+      `<a class="csu-cm-btn" href="https://github.com/${INBOX}/issues/${issue.number}" target="_blank" rel="noopener">💬 去评论 / 👍 点赞</a>` +
+      ` <span class="csu-cm-meta" data-role="meta"></span></p>\n` +
+      `<div class="csu-comments-list" data-role="list"><p class="csu-cm-meta">评论加载中…</p></div>\n` +
+      `</section>\n`;
+
     const fm = [
       "---",
       `title: ${yq(title)}`,
@@ -183,8 +193,8 @@ function extractText(dest) {
       "",
     ].join("\n");
 
-    fs.writeFileSync(file, fm + head + attach + content + "\n" + fulltextBlock);
-    console.log(`✓ ${file}（标签：${tags.join("/") || "无"}，附件：${attachDest ? "有" : "无"}）`);
+    fs.writeFileSync(file, fm + head + attach + content + "\n" + fulltextBlock + commentsBlock);
+    console.log(`✓ ${file}（标签：${tags.join("/") || "无"}，附件：${attachDest ? "有" : "无"}，评论区：Issue#${issue.number}）`);
   }
   console.log("完成。");
 })().catch((e) => {

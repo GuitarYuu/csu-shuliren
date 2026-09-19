@@ -58,4 +58,5 @@ extra_javascript:
   - javascripts/guard.js          # github.io 直连 → 探测 Worker 可达才跳转
   - javascripts/resilience.js     # Worker 域名样式加载失败 → 自动回退 github.io
   - javascripts/i18n.js           # 站点布局中英文切换（顶栏 EN/中 按钮）
+  - javascripts/comments.js       # 文章评论区（收件箱 Issue 数据 + 点赞计数）
   - javascripts/submit.js         # 首页投稿表单提交逻辑

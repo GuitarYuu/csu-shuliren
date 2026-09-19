@@ -119,6 +119,7 @@
     "✨ 如何发布": "✨ How it works",
     "📮 投稿": "📮 Submit",
     "📌 须知": "📌 Notes",
+    "💬 评论与点赞": "💬 Comments & likes",
   };
   var EN2ZH = {};
   Object.keys(ZH2EN).forEach(function (k) { EN2ZH[ZH2EN[k]] = k; });
