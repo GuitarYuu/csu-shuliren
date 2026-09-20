@@ -35,6 +35,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           INBOX_REPO: GuitarYuu/csu-submissions
           WORKER_URL: https://csu-shuliren.2544864177.workers.dev
+          SITE_URL: https://guitaryuu.github.io/csu-shuliren
         run: node scripts/fetch-published.js
 
       - name: 安装 Python

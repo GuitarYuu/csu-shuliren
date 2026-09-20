@@ -134,20 +134,41 @@ function extractText(dest) {
     // 文件名只用 ASCII（日期 + Issue 编号），标题由 front matter 呈现，避免中文 URL 的兼容问题
     const file = path.join(dirAbs, `${date}-issue-${issue.number}.md`);
 
-    // 附件
+    // 附件（下载按钮 + 按格式在线预览）
     const attachDest = downloadAttachment(meta, dirAbs);
     let attach = "";
     if (attachDest) {
-      const label = meta.filename || path.basename(attachDest);
+      const base = path.basename(attachDest);
+      const ext = (path.extname(base) || "").slice(1).toLowerCase();
+      const sizeLabel = humanSize(fs.statSync(attachDest).size);
+      const label = meta.filename || base;
       attach =
         `\n<p class="csu-download">` +
-        `<a class="csu-dl-btn" href="${path.basename(attachDest)}" download>📎 下载附件：${escHtml(label)}（${humanSize(fs.statSync(attachDest).size)}）</a>` +
+        `<a class="csu-dl-btn" href="${base}" download>📎 下载附件：${escHtml(label)}（${sizeLabel}）</a>` +
         `</p>\n`;
+
+      // 在线预览：PDF 页内阅读；图片直接显示；txt/md 内容预览；Office 文档用 Office Viewer
+      const SITE = (process.env.SITE_URL || "").replace(/\/+$/, "");
+      const absUrl = SITE ? `${SITE}/posts/resources/files/${base}` : "";
+      if (ext === "pdf") {
+        attach +=
+          `\n<p class="csu-attach-title">📖 在线预览</p>\n` +
+          `<iframe class="csu-attach-view" src="${base}" title="${escHtml(label)}"></iframe>\n`;
+      } else if (["png", "jpg", "jpeg", "gif", "webp"].indexOf(ext) !== -1) {
+        attach += `\n<p><img class="csu-attach-view" src="${base}" alt="${escHtml(label)}"></p>\n`;
+      } else if (ext === "txt" || ext === "md") {
+        attach +=
+          `\n<p class="csu-attach-title">📖 内容预览</p>\n` +
+          `<pre class="csu-fulltext-pre">${escHtml(fs.readFileSync(attachDest, "utf8").slice(0, 5000))}</pre>\n`;
+      } else if (["doc", "docx", "ppt", "pptx", "xls", "xlsx"].indexOf(ext) !== -1 && SITE) {
+        const view = "https://view.officeapps.live.com/op/view.aspx?src=" + encodeURIComponent(absUrl);
+        attach += `\n<p><a class="csu-cm-btn" target="_blank" rel="noopener" href="${view}">🖥️ 在线预览此文档（Office Viewer）</a></p>\n`;
+      }
     }
 
     // 附件全文（进搜索索引 + 在线阅读）
     let fulltextBlock = "";
-    if (attachDest) {
+    if (attachDest && (meta.file, true)) {
       const text = extractText(attachDest);
       if (text) {
         fulltextBlock =

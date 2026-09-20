@@ -453,6 +453,22 @@
   margin-top: 0.6em;
 }
 
+/* ---------- 附件在线预览 ---------- */
+.md-typeset .csu-attach-title {
+  margin: 1.2em 0 0.4em !important;
+  font-weight: 700;
+}
+.md-typeset iframe.csu-attach-view {
+  width: 100%;
+  height: 640px;
+  border: 1px solid var(--md-default-fg-color--lighter);
+  border-radius: 0.5rem;
+}
+.md-typeset img.csu-attach-view {
+  max-width: 100%;
+  border-radius: 0.5rem;
+}
+
 /* ---------- 首页副标题（兼容旧版） ---------- */
 .md-typeset .hero-sub {
   font-size: 1.02em;

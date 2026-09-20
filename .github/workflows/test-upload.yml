@@ -1,0 +1,38 @@
+# ============================================================================
+# 临时工作流：端到端验证附件上传链路（上传→建稿），验证完成后可删除本文件
+# ============================================================================
+name: Test Upload（临时E2E：附件链路验证）
+
+on:
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      WORKER_URL: https://csu-shuliren.2544864177.workers.dev
+    steps:
+      - name: 生成测试文件并上传投稿
+        run: |
+          printf 'CSU数理人 附件上传链路测试文件\n第一行：欧拉公式\n第二行：2026\n' > /tmp/test-resource.txt
+          UP=$(curl -fsSL --max-time 60 -F "file=@/tmp/test-resource.txt;type=text/plain" "$WORKER_URL/api/upload")
+          echo "UPLOAD: $UP"
+          ID=$(printf '%s' "$UP" | grep -oP '(?<="id":")[^"]+')
+          if [ -z "$ID" ]; then echo "上传失败"; exit 1; fi
+          SIZE=$(wc -c < /tmp/test-resource.txt)
+          BODY=$(node -e "
+            const id = process.argv[1], size = Number(process.argv[2]);
+            console.log(JSON.stringify({
+              type: '资料汇总',
+              title: '附件上传链路测试（E2E）',
+              author: 'e2e-bot',
+              email: 'e2e@test.local',
+              tags: '测试, E2E',
+              content: '这是附件上传链路的端到端测试资料：包含一个文本附件，用于验证上传、下载、预览与全文检索。',
+              fileId: id, fileName: 'test-resource.txt', fileSize: size,
+            }));
+          " "$ID" "$SIZE")
+          curl -fsSL --max-time 60 -X POST "$WORKER_URL/api/submit" \
+            -H "Content-Type: application/json" -d "$BODY"
