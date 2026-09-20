@@ -200,6 +200,36 @@ function extractText(dest) {
     fs.writeFileSync(file, fm + head + attach + content + "\n" + fulltextBlock + giscusBlock);
     console.log(`✓ ${file}（标签：${tags.join("/") || "无"}，附件：${attachDest ? "有" : "无"}，评论区：giscus）`);
   }
+
+  // 8) 生成各栏目落地页：按时间倒序列出该栏目全部稿件（最新在最上）
+  const CAT_PAGES = [
+    ["experience", "🧭 经验分享", "学习方法、课程攻略、备考心得、竞赛复盘。最新在最上。"],
+    ["insights", "💡 灵光一现", "猜想、小证明、反例、一题多解。最新在最上。"],
+    ["resources", "📚 资料汇总", "书单、网课、讲义、工具网站（部分含附件下载）。最新在最上。"],
+  ];
+  for (const [dir, title, intro] of CAT_PAGES) {
+    const abs = path.join(ROOT, dir);
+    if (!fs.existsSync(abs)) continue;
+    const posts = fs.readdirSync(abs)
+      .filter((f) => f.endsWith(".md") && f !== "index.md")
+      .sort()
+      .reverse(); // 文件名以日期开头 → 倒序即最新在前
+    const items = posts
+      .map((f) => {
+        const raw = fs.readFileSync(path.join(abs, f), "utf8");
+        const tm = raw.match(/^title:\s*(.+)$/m);
+        const t = tm ? tm[1].replace(/^"|"$/g, "") : f.replace(/\.md$/, "").slice(11);
+        const d = f.slice(0, 10);
+        const href = f.replace(/\.md$/, "") + "/";
+        return `  <li><a href="${href}">${escHtml(t)}</a> <span class="csu-cm-time">${d}</span></li>`;
+      })
+      .join("\n");
+    const page =
+      `---\ntitle: ${yq(title)}\ndescription: ${yq(intro)}\n---\n\n` +
+      `<ol class="csu-post-list">\n${items}\n</ol>\n`;
+    fs.writeFileSync(path.join(abs, "index.md"), page);
+    console.log(`生成栏目页：${dir}/index.md（${posts.length} 篇，按时间倒序）`);
+  }
   console.log("完成。");
 })().catch((e) => {
   console.error("拉取投稿失败：", e.message);
