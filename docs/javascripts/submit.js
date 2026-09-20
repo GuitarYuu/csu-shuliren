@@ -169,23 +169,12 @@
         "<br>📎 " + esc(MSG.withFile.replace("{name}", file.name).replace("{size}", humanSize(file.size))) + "<br>" +
         esc(MSG.step1) + "<br>" + esc(MSG.step2) + "<br><br>";
     }
-    if (tooLong) {
-      html += esc(MSG.fallbackLong) + "<br><br>";
-    }
     if (!tooLong) {
-      html +=
-        '<a class="csu-dl-btn" target="_blank" rel="noopener" href="' + esc(url) + '">' + esc(MSG.fallbackBtn) + "</a> ";
+      html += '<a class="csu-dl-btn" target="_blank" rel="noopener" href="' + esc(url) + '">' + esc(MSG.fallbackBtn) + "</a>";
+    } else {
+      html += esc(MSG.fallbackLong);
     }
-    html +=
-      '<a class="csu-btn" target="_blank" rel="noopener" href="' + ISSUE_NEW_URL + '">' + esc(MSG.fallbackOpen) + "</a> " +
-      '<button type="button" class="csu-btn" id="csu-copy-btn">' + esc(MSG.fallbackCopy) + "</button>";
     box.innerHTML = html;
-
-    document.getElementById("csu-copy-btn").addEventListener("click", function () {
-      navigator.clipboard.writeText(fullBody).then(function () {
-        document.getElementById("csu-copy-btn").textContent = MSG.copied;
-      });
-    });
   }
 
   form.addEventListener("submit", function (e) {
