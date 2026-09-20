@@ -129,18 +129,10 @@ function extractText(dest) {
     const author = meta.author || (issue.user ? issue.user.login : "anonymous");
     const date = (meta.date || issue.created_at || new Date().toISOString()).slice(0, 10);
     const tags = String(meta.tags || "").split(/[,，、;；]/).map((t) => t.trim()).filter(Boolean).slice(0, 5);
-
-    const slug =
-      title
-        .replace(/[\\/:*?"<>|#&[\]{}]+/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/[^\w\u4e00-\u9fa5-]/g, "")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "")
-        .slice(0, 40) || "untitled";
     const dirAbs = path.join(ROOT, DIRS[type]);
     fs.mkdirSync(dirAbs, { recursive: true });
-    const file = path.join(dirAbs, `${date}-issue-${issue.number}-${slug}.md`);
+    // 文件名只用 ASCII（日期 + Issue 编号），标题由 front matter 呈现，避免中文 URL 的兼容问题
+    const file = path.join(dirAbs, `${date}-issue-${issue.number}.md`);
 
     // 附件
     const attachDest = downloadAttachment(meta, dirAbs);
