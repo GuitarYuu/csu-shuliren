@@ -86,5 +86,9 @@ description: CSU数理人 · 中南大学数理学习笔记共享站
 <ol>
   <li data-i18n="note.1">内容须为<strong>本人原创或已获授权</strong>，禁止抄袭与未授权转载；</li>
   <li data-i18n="note.2">LaTeX 行内公式用 <code>$...$</code>、独立公式用 <code>$$...$$</code>，代码用三反引号围栏；</li>
-  <li data-i18n="note.5">如需撤稿或修改，在对应 Issue 下留言联系管理员。</li>
+  <li data-i18n="note.3">标签可选，逗号分隔最多 5 个，便于文章分类检索；</li>
+  <li data-i18n="note.4">「资料汇总」可附加 PDF / Word / PPT / 压缩包等文件（单个 ≤ 20MB），审核通过后可直接在站内下载；</li>
+  <li data-i18n="note.5">部分网络可能无法在线提交，此时请点击「通过 GitHub 提交」备用按钮（需 GitHub 账号登录）；</li>
+  <li data-i18n="note.6">文章底部评论区支持评论与点赞，需<strong>登录 GitHub 账号</strong>后操作；</li>
+  <li data-i18n="note.7">投稿后管理员会收到邮件通知，审核通过自动上线；如需撤稿或修改，在对应 Issue 下留言即可。</li>
 </ol>

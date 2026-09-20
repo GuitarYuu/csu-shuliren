@@ -101,9 +101,25 @@
       zh: "LaTeX 行内公式用 <code>$...$</code>、独立公式用 <code>$$...$$</code>，代码用三反引号围栏；",
       en: "Use <code>$...$</code> for inline LaTeX, <code>$$...$$</code> for display math, and triple backticks for code blocks;",
     },
+    "note.3": {
+      zh: "标签可选，逗号分隔最多 5 个，便于文章分类检索；",
+      en: "Tags are optional — separate with commas, up to 5, to make posts easier to find;",
+    },
+    "note.4": {
+      zh: "「资料汇总」可附加 PDF / Word / PPT / 压缩包等文件（单个 ≤ 20MB），审核通过后可直接在站内下载；",
+      en: "“Resources” posts may attach files such as PDF / Word / PPT / archives (≤ 20MB each); after approval they are downloadable on the site;",
+    },
     "note.5": {
-      zh: "如需撤稿或修改，在对应 Issue 下留言联系管理员。",
-      en: "To withdraw or revise a post, leave a comment on the corresponding Issue to contact the admin.",
+      zh: "部分网络可能无法在线提交，此时请点击「通过 GitHub 提交」备用按钮（需 GitHub 账号登录）；",
+      en: "If online submission is blocked on your network, use the “Submit via GitHub” fallback button (requires signing in to GitHub);",
+    },
+    "note.6": {
+      zh: "文章底部评论区支持评论与点赞，需<strong>登录 GitHub 账号</strong>后操作；",
+      en: "The comments and likes section at the bottom of each post requires <strong>signing in with a GitHub account</strong>;",
+    },
+    "note.7": {
+      zh: "投稿后管理员会收到邮件通知，审核通过自动上线；如需撤稿或修改，在对应 Issue 下留言即可。",
+      en: "Admins get an email notification for every submission; approved posts go live automatically. To withdraw or revise, comment on the corresponding Issue.",
     },
   };
 
