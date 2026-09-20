@@ -144,7 +144,7 @@ function extractText(dest) {
       const label = meta.filename || base;
       attach =
         `\n<p class="csu-download">` +
-        `<a class="csu-dl-btn" href="${base}" download>📎 下载附件：${escHtml(label)}（${sizeLabel}）</a>` +
+        `<a class="csu-dl-btn" href="files/${base}" download>📎 下载附件：${escHtml(label)}（${sizeLabel}）</a>` +
         `</p>\n`;
 
       // 在线预览：PDF 页内阅读；图片直接显示；txt/md 内容预览；Office 文档用 Office Viewer
