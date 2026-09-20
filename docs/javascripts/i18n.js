@@ -27,6 +27,38 @@
     "sec.how": { zh: "✨ 如何发布", en: "✨ How it works" },
     "sec.submit": { zh: "📮 投稿", en: "📮 Submit" },
     "sec.notes": { zh: "📌 须知", en: "📌 Notes" },
+    "posts.h1": { zh: "笔记文章", en: "Posts" },
+    "posts.intro": {
+      zh: "所有笔记按栏目自动归档，新文章审核通过后会自动出现在对应栏目中。",
+      en: "All notes are automatically archived by category; approved new posts appear in their section automatically.",
+    },
+    "cat.experience.h1": { zh: "🧭 经验分享", en: "🧭 Experience" },
+    "cat.experience.intro": {
+      zh: "学习方法、课程攻略、备考心得、竞赛复盘——把走过的路写成路标。",
+      en: "Study methods, course guides, exam strategies, contest reviews — turn the road you walked into signposts.",
+    },
+    "cat.experience.note": {
+      zh: "新文章审核通过后会自动出现在左侧列表。想投稿到这个栏目？回到首页投稿表单选择「经验分享」即可。",
+      en: "New posts appear in the left list automatically after approval. To submit here, use the form on the home page and choose “Experience”.",
+    },
+    "cat.insights.h1": { zh: "💡 灵光一现", en: "💡 Insight" },
+    "cat.insights.intro": {
+      zh: "突然冒出的猜想、巧妙的小证明、漂亮的反例——短小没关系，闪光就好。",
+      en: "Sudden conjectures, clever mini proofs, beautiful counterexamples — short is fine, sparkle is what matters.",
+    },
+    "cat.insights.note": {
+      zh: "新文章审核通过后会自动出现在左侧列表。想投稿到这个栏目？回到首页投稿表单选择「灵光一现」即可。",
+      en: "New posts appear in the left list automatically after approval. To submit here, use the form on the home page and choose “Insight”.",
+    },
+    "cat.resources.h1": { zh: "📚 资料汇总", en: "📚 Resources" },
+    "cat.resources.intro": {
+      zh: "书单、网课、讲义、软件与网站——支持 PDF 等附件下载，附件内容也会被纳入站内搜索。",
+      en: "Book lists, online courses, lecture notes, software and sites — supports PDF attachments; attachment text is indexed for site search.",
+    },
+    "cat.resources.note": {
+      zh: "新文章审核通过后会自动出现在左侧列表。想投稿到这个栏目？回到首页投稿表单选择「资料汇总」即可（可附加文件）。",
+      en: "New posts appear in the left list automatically after approval. To submit here, use the form on the home page and choose “Resources” (attachments supported).",
+    },
     "card.exp.title": { zh: "🧭 经验分享", en: "🧭 Experience" },
     "card.exp.desc": {
       zh: "学习方法、课程攻略、备考心得、竞赛复盘……把走过的路写成路标，照亮学弟学妹的下一步。",
@@ -130,6 +162,9 @@
     "经验分享": "Experience",
     "灵光一现": "Insight",
     "资料汇总": "Resources",
+    "🧭 经验分享": "🧭 Experience",
+    "💡 灵光一现": "💡 Insight",
+    "📚 资料汇总": "📚 Resources",
     "CSU数理人": "CSU Math & Physics Notes",
     "🗂️ 发布栏目": "🗂️ Categories",
     "✨ 如何发布": "✨ How it works",
