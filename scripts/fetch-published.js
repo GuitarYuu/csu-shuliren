@@ -166,6 +166,54 @@ function extractText(dest) {
       }
     }
 
+    // GitHub 直投通道：投稿者在 Issue 编辑框拖入的 user-attachments 附件
+    if (!attachDest) {
+      const uaUrls = (issue.body || "").match(/https:\/\/github\.com\/user-attachments\/[^\s)"'>]+/g) || [];
+      const CT2EXT = {
+        "application/pdf": "pdf",
+        "application/zip": "zip", "application/x-zip-compressed": "zip", "application/vnd.rar": "rar",
+        "application/x-7z-compressed": "7z",
+        "text/plain": "txt", "text/markdown": "md",
+        "application/msword": "doc",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+        "application/vnd.ms-powerpoint": "ppt",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+        "application/vnd.ms-excel": "xls",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+        "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp",
+      };
+      let buttons = "";
+      let previewDest = "";
+      uaUrls.forEach(function (u, idx) {
+        const uid = (u.split("/").pop() || "att" + idx).replace(/[^\w-]/g, "").slice(0, 40) || "att" + idx;
+        const dest0 = path.join(dirAbs, "files", uid + ".bin");
+        fs.mkdirSync(path.dirname(dest0), { recursive: true });
+        try {
+          execSync(`curl -fsSL --max-time 180 -D /tmp/csu_ua_h.txt "${u}" -o "${dest0}"`, { shell: "/bin/bash", stdio: "pipe" });
+          const htxt = fs.readFileSync("/tmp/csu_ua_h.txt", "utf8");
+          const ctype = ((htxt.match(/content-type:\s*([^\r\n;]+)/i) || [])[1] || "").trim().toLowerCase();
+          const ext = CT2EXT[ctype] || "bin";
+          const dest = dest0.replace(/\.bin$/, ext === "bin" ? "" : "." + ext);
+          fs.renameSync(dest0, dest);
+          buttons +=
+            `\n<p class="csu-download">` +
+            `<a class="csu-dl-btn" href="files/${path.basename(dest)}" download>📎 下载附件 ${idx + 1}（${humanSize(fs.statSync(dest).size)}）</a>` +
+            `</p>\n`;
+          if (!previewDest) previewDest = dest;
+        } catch (e) {
+          console.warn("⚠ GitHub 附件下载失败:", u.slice(0, 70), e.message);
+        }
+      });
+      if (buttons) {
+        attach = "\n" + buttons;
+        if (/\.pdf$/i.test(previewDest)) {
+          attach += `\n<iframe class="csu-attach-view" src="files/${path.basename(previewDest)}" title="附件预览"></iframe>\n`;
+        } else if (/\.(png|jpe?g|gif|webp)$/i.test(previewDest)) {
+          attach += `\n<p><img class="csu-attach-view" src="files/${path.basename(previewDest)}" alt="附件预览"></p>\n`;
+        }
+      }
+    }
+
     // 附件全文（进搜索索引 + 在线阅读）
     let fulltextBlock = "";
     if (attachDest && (meta.file, true)) {

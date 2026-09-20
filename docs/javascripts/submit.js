@@ -1,11 +1,11 @@
 /**
- * 首页投稿表单逻辑（双通道）：
- *   通道 A（在线）：POST {Worker}/api/submit → Worker 调 GitHub API 创建 Issue
- *   通道 B（备用）：在线通道不可达时（部分网络屏蔽 workers.dev），
- *                   生成预填好的 GitHub Issue 页面链接，访客登录 GitHub 后一键提交
+ * 首页投稿表单逻辑（双通道，附件全程支持）：
+ *   通道 A（在线）：选了附件 → 先 POST {Worker}/api/upload 上传 → 再 POST /api/submit 建稿
+ *   通道 B（备用）：在线通道不可达时自动出现——打开预填好的 GitHub 投稿页，
+ *                   把附件文件拖入 GitHub 正文编辑框即可上传（GitHub 限单文件 ≤25MB）
  *
- * 两通道最终都产生审核 Issue → 站长打 publish 标签自动发布。
- * 附件上传（资料汇总）仅通道 A 支持；提示文案跟随站点语言（csu_lang）。
+ * Worker 地址已回填；经 Worker 访问时走同源，从 github.io 直连时跨域调用。
+ * 提示文案跟随站点语言（csu_lang）。
  */
 (function () {
   var WORKER_ORIGIN = "https://csu-shuliren.2544864177.workers.dev";
@@ -35,12 +35,15 @@
       badtype: "不支持的文件格式，请使用 PDF / Word / PPT / 压缩包等常见格式",
       upfail: "附件上传失败：",
       fallbackTitle: "⚠ 在线通道当前不可用（你的网络可能屏蔽了投稿服务）",
-      fallbackHint: "备选方案：通过 GitHub 提交（需 GitHub 账号登录，邮箱不会随投稿公开）。资料类投稿请在正文中附上网盘/下载链接（GitHub 不支持直接上传附件）。",
+      fallbackHint: "备选方案：通过 GitHub 提交（需 GitHub 账号登录，邮箱不会随投稿公开）。",
       fallbackBtn: "🚀 通过 GitHub 提交 →",
       fallbackOpen: "打开 GitHub 投稿页",
       fallbackCopy: "📋 复制投稿内容",
       fallbackLong: "正文过长，超出 GitHub 链接容量。请精简正文后重试，或点击「复制投稿内容」后到 GitHub 手动粘贴。",
       copied: "已复制到剪贴板，请到 GitHub 投稿页粘贴提交 →",
+      withFile: "已选择附件 {name}（{size}）。带附件投稿的两个步骤：",
+      step1: "① 点「通过 GitHub 提交」打开投稿页（标题正文已预填）",
+      step2: "② 登录 GitHub 后，把附件文件从电脑拖入正文编辑框（GitHub 自动上传，≤25MB）",
     },
     en: {
       busy: "Submitting…",
@@ -54,14 +57,21 @@
       badtype: "Unsupported file type — please use PDF / Word / PPT / archives, etc.",
       upfail: "File upload failed: ",
       fallbackTitle: "⚠ The online channel is currently unreachable from your network",
-      fallbackHint: "Alternative: submit via GitHub (requires a GitHub account; your email is not included). For resources, paste download/cloud-drive links in the content — GitHub does not allow direct file attachments.",
+      fallbackHint: "Alternative: submit via GitHub (requires a GitHub account; your email is not included).",
       fallbackBtn: "🚀 Submit via GitHub →",
       fallbackOpen: "Open the GitHub submission page",
       fallbackCopy: "📋 Copy my submission",
       fallbackLong: "Content too long for the GitHub link. Please shorten it, or use “Copy my submission” and paste it on GitHub.",
       copied: "Copied! Paste it on the GitHub submission page →",
+      withFile: "Attachment selected: {name} ({size}). Two steps to submit with attachment:",
+      step1: "① Click “Submit via GitHub” to open the pre-filled page",
+      step2: "② After signing in, drag the attachment file into the body editor (GitHub uploads it automatically, ≤25MB)",
     },
   }[lang];
+
+  function humanSize(n) {
+    return n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+  }
 
   // 选择「资料汇总」时显示附件框
   var fileBox = document.getElementById("csu-file-box");
@@ -96,8 +106,7 @@
       fileInput.value = "";
       return;
     }
-    var human = f.size >= 1048576 ? (f.size / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(f.size / 1024)) + " KB";
-    fileHint.textContent = "📎 " + f.name + "（" + human + "）";
+    fileHint.textContent = "📎 " + f.name + "（" + humanSize(f.size) + "）";
   });
 
   function val(id) {
@@ -121,7 +130,7 @@
       content: document.getElementById("csu-f-content").value,
     };
   }
-  function buildGithubIssueUrl(p) {
+  function buildGithubIssueBody(p, file) {
     var line = function (s) { return String(s).replace(/[\r\n]+/g, " "); };
     var meta =
       "<!--CSU-META\n" +
@@ -131,18 +140,35 @@
       (p.tags ? "tags: " + line(p.tags) + "\n" : "") +
       "date: " + new Date().toISOString() + "\n" +
       "CSU-META-->\n\n" +
+      (file
+        ? "📎 附件：" + line(file.name) + "（" + humanSize(file.size) + "）——请把该文件从电脑拖入编辑器上传\n\n"
+        : "") +
       p.content + "\n";
+    return meta;
+  }
+  function buildGithubIssueUrl(p, file) {
     return (
       ISSUE_NEW_URL +
       "?title=" + encodeURIComponent("[投稿][" + p.type + "] " + p.title) +
-      "&body=" + encodeURIComponent(meta)
+      "&body=" + encodeURIComponent(buildGithubIssueBody(p, file))
     );
   }
-  function showFallback(p) {
-    var url = buildGithubIssueUrl(p);
+
+  function showFallback(p, file) {
+    var fullBody = buildGithubIssueBody(p, file);
+    var url = ISSUE_NEW_URL + "?title=" + encodeURIComponent("[投稿][" + p.type + "] " + p.title) +
+      "&body=" + encodeURIComponent(fullBody);
     var tooLong = url.length > MAX_URL_LEN;
-    var html =
-      esc(MSG.fallbackTitle) + "<br>" + esc(MSG.fallbackHint) + "<br><br>";
+    var box = document.getElementById("csu-submit-result");
+    box.hidden = false;
+    box.className = "csu-result err";
+
+    var html = esc(MSG.fallbackTitle) + "<br>" + esc(MSG.fallbackHint) + "<br>";
+    if (file) {
+      html +=
+        "<br>📎 " + esc(MSG.withFile.replace("{name}", file.name).replace("{size}", humanSize(file.size))) + "<br>" +
+        esc(MSG.step1) + "<br>" + esc(MSG.step2) + "<br><br>";
+    }
     if (tooLong) {
       html += esc(MSG.fallbackLong) + "<br><br>";
     }
@@ -153,24 +179,11 @@
     html +=
       '<a class="csu-btn" target="_blank" rel="noopener" href="' + ISSUE_NEW_URL + '">' + esc(MSG.fallbackOpen) + "</a> " +
       '<button type="button" class="csu-btn" id="csu-copy-btn">' + esc(MSG.fallbackCopy) + "</button>";
-    var box = document.getElementById("csu-submit-result");
-    box.hidden = false;
-    box.className = "csu-result err";
     box.innerHTML = html;
+
     document.getElementById("csu-copy-btn").addEventListener("click", function () {
-      var line = function (s) { return String(s).replace(/[\r\n]+/g, " "); };
-      var full =
-        "<!--CSU-META\n" +
-        "title: " + line(p.title) + "\n" +
-        "author: " + line(p.author) + "\n" +
-        "type: " + line(p.type) + "\n" +
-        (p.tags ? "tags: " + line(p.tags) + "\n" : "") +
-        "date: " + new Date().toISOString() + "\n" +
-        "CSU-META-->\n\n" +
-        p.content + "\n";
-      navigator.clipboard.writeText(full).then(function () {
-        var b = document.getElementById("csu-copy-btn");
-        b.textContent = MSG.copied;
+      navigator.clipboard.writeText(fullBody).then(function () {
+        document.getElementById("csu-copy-btn").textContent = MSG.copied;
       });
     });
   }
@@ -244,9 +257,10 @@
         }
       })
       .catch(function (err) {
-        // 网络不可达等：提供 GitHub 备用通道
+        // 网络不可达等：提供 GitHub 备用通道（含附件拖拽说明）
         finish();
-        showFallback(payload);
+        var f = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+        showFallback(payload, f);
         return;
       })
       .finally(finish);

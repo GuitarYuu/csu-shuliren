@@ -10,7 +10,7 @@ on:
     paths: ["docs/**", "mkdocs.yml"]
   workflow_dispatch: {}    # 支持手动运行
   schedule:
-    - cron: "*/10 * * * *"  # 每 10 分钟自动构建：收件箱打 publish 标签后最迟 10 分钟上线
+    - cron: "*/2 * * * *"  # 每 2 分钟自动构建：收件箱打 publish 标签后 ≤5 分钟内自动上线
 
 permissions:
   contents: read
