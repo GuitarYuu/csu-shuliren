@@ -8,7 +8,9 @@ on:
   push:
     branches: [main]
     paths: ["docs/**", "mkdocs.yml"]
-  workflow_dispatch: {}    # 供 auto-publish 工作流显式触发，也支持手动运行
+  workflow_dispatch: {}    # 支持手动运行
+  schedule:
+    - cron: "*/10 * * * *"  # 每 10 分钟自动构建：收件箱打 publish 标签后最迟 10 分钟上线
 
 permissions:
   contents: read
