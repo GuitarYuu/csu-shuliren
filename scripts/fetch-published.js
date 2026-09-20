@@ -175,9 +175,23 @@ function extractText(dest) {
     const giscusBlock =
       `\n<h2 id="comments">💬 评论与点赞</h2>\n` +
       `<p class="csu-comments-hint">基于 GitHub Discussions：登录 GitHub 后即可在下方直接评论，第一个 👍 表情就是点赞。</p>\n` +
-      `<div class="csu-giscus" data-repo="${INBOX}" data-repo-id="R_kgDOUep9cQ" ` +
-      `data-category="Announcements" data-category-id="DIC_kwDOUep9cc4DF-qQ">` +
-      `<em class="csu-cm-meta">评论组件加载中…（未显示请检查网络或刷新页面）</em></div>\n`;
+      `<div class="csu-giscus">\n` +
+      `<script src="https://giscus.app/client.js"\n` +
+      `  data-repo="${INBOX}"\n` +
+      `  data-repo-id="R_kgDOUep9cQ"\n` +
+      `  data-category="Announcements"\n` +
+      `  data-category-id="DIC_kwDOUep9cc4DF-qQ"\n` +
+      `  data-mapping="pathname"\n` +
+      `  data-strict="1"\n` +
+      `  data-reactions-enabled="1"\n` +
+      `  data-emit-metadata="0"\n` +
+      `  data-input-position="top"\n` +
+      `  data-theme="preferred_color_scheme"\n` +
+      `  data-lang="zh-CN"\n` +
+      `  data-loading="lazy"\n` +
+      `  crossorigin="anonymous"\n` +
+      `  async>\n` +
+      `</script>\n</div>\n`;
 
     const fm = [
       "---",
